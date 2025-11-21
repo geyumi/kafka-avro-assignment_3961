@@ -1,0 +1,4 @@
+flask
+confluent-kafka
+fastavro
+requests
