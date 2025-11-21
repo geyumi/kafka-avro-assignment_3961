@@ -2,19 +2,6 @@ Kafka Avro Assignment
 
 This project implements a complete event-driven pipeline using Apache Kafka, Avro serialization, Python producers & consumers, retry logic, dead letter queue (DLQ) and a running average computation.
 
-📂 Project Structure
-project/
-├── docker-compose.yml        # Kafka + Schema Registry
-├── order.avsc                # Avro Schema for Order messages
-│
-├── producer/
-│   ├── producer.py           # Python Producer using Avro
-│   └── requirements.txt
-│
-└── consumer/
-    ├── consumer.py           # Consumer with retries, DLQ, running avg
-    └── requirements.txt
-
 🧰 Technologies Used
 
 | Technology                             |      Purpose                              |
