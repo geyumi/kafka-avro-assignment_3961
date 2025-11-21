@@ -42,8 +42,8 @@ def process_order(order):
     if order["price"] < 0:
         raise ValueError("Permanent failure: negative price")
     # Simulate transient failure for price == 13.13 
-    if abs(order["price"] - 13.13) < 1e-6:
-        raise RuntimeError("Temporary failure: unlucky price")
+    if 0 <= order["price"] < 10:
+        raise RuntimeError("Temporary failure: price too low")
     # If OK, update running average 
     stats["count"] += 1
     stats["sum"] += order["price"]
