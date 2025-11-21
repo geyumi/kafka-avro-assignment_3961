@@ -1,4 +1,5 @@
-# rest_producer/api.py
+# rest_producer/api.py 
+# # so this can be use by curl , postman or any rest client to produce messages to kafka
 import json, uuid
 from flask import Flask, request, jsonify
 from confluent_kafka import Producer
@@ -14,7 +15,7 @@ KAFKA_BOOTSTRAP = "localhost:9092"
 SCHEMA_REGISTRY_URL = "http://localhost:8081"
 TOPIC = "orders"
 
-# Load Avro schema
+# to load Avro schema for serialization 
 schema_path = Path(__file__).resolve().parent.parent / "order.avsc"
 schema = json.load(open(schema_path))
 parsed_schema = parse_schema(schema)
@@ -31,20 +32,20 @@ producer = Producer(producer_conf)
 @app.route("/produce", methods=["POST"])
 def produce():
     payload = request.json
-    # Ensure fields: orderId, product, price
+    #  to include the fields orderId, product, price
     if "orderId" not in payload:
         payload["orderId"] = str(uuid.uuid4())
-    # Convert price to float
+    # Convert price to floating number
     payload["price"] = float(payload["price"])
-    # Serialize using fastavro before sending or use AvroSerializer to produce bytes
-    # We'll register the schema in the registry and produce raw Avro bytes with a simple approach:
+    # Serialize using fastavro before sending to Kafka
+    # to register the schema in the registry and produce raw Avro bytes with a simple approach 
     from fastavro import writer, schemaless_writer
     import io
     buf = io.BytesIO()
     schemaless_writer(buf, schema, payload)
     avro_bytes = buf.getvalue()
 
-    # send as bytes to Kafka
+    # to send as bytes to Kafka topic 
     producer.produce(TOPIC, value=avro_bytes)
     producer.flush()
     return jsonify({"status":"sent", "order": payload})

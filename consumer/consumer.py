@@ -1,4 +1,6 @@
 # consumer/consumer.py
+# this is whether we consume messages from kafka topic "orders" and process them
+# maintain running average of order prices
 import time, io, json
 from confluent_kafka import Consumer, Producer, KafkaError
 from fastavro import schemaless_reader, parse_schema
@@ -12,13 +14,13 @@ DLQ_TOPIC = "orders-dlq"
 MAX_RETRIES = 3
 RETRY_BACKOFF_SECONDS = 2
 
-# Running average store (in-memory). For production use external store (Redis).
+# running average store in the memory. For production use external store like Redis or databases
 stats = {
     "count": 0,
     "sum": 0.0
 }
 
-# load schema
+# load schema for decoding Avro messages from Kafka
 schema_path = Path(__file__).resolve().parent.parent / "order.avsc"
 schema = json.load(open(schema_path))
 parsed_schema = parse_schema(schema)
@@ -36,13 +38,13 @@ def process_order(order):
     Simulate processing. Raise exception for specific cases to demonstrate retry and DLQ.
     Replace with real business logic.
     """
-    # Example: treat price < 0 as permanent failure
+    # treat price < 0 as permanent failure
     if order["price"] < 0:
         raise ValueError("Permanent failure: negative price")
-    # Simulate transient failure for price == 13.13
+    # Simulate transient failure for price == 13.13 
     if abs(order["price"] - 13.13) < 1e-6:
         raise RuntimeError("Temporary failure: unlucky price")
-    # If OK, update running average
+    # If OK, update running average 
     stats["count"] += 1
     stats["sum"] += order["price"]
     avg = stats["sum"] / stats["count"]
@@ -53,7 +55,7 @@ def send_to_dlq(raw_value, headers=None):
     producer.flush()
 
 def handle_with_retries(raw_value):
-    # Try to decode Avro bytes:
+    # to decode Avro bytes from Kafka 
     buf = io.BytesIO(raw_value)
     try:
         order = schemaless_reader(buf, schema)
@@ -63,7 +65,7 @@ def handle_with_retries(raw_value):
         send_to_dlq(raw_value)
         return
 
-    # Attempt processing with retries
+    # Attempt processing with retries 
     attempt = 0
     while attempt <= MAX_RETRIES:
         try:
@@ -97,7 +99,7 @@ def main():
                 print("Consumer error: ", msg.error())
                 continue
             raw = msg.value()
-            # Optionally use headers to track retry attempts and metadata
+            # use headers to track retry attempts and metadata
             handle_with_retries(raw)
     except KeyboardInterrupt:
         pass
