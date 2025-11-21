@@ -58,7 +58,7 @@ docker compose exec kafka bash -c \
   "kafka-topics --create --topic orders-dlq --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1"
 
 
-  ### Step 5 — Install Producer Requirements
+### Step 5 — Install Producer Requirements
 Run producer:  
 `python api.py`
 
